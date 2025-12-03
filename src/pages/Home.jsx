@@ -5,6 +5,7 @@ import FeaturedProjects from '../components/FeaturedProjects';
 import SEO from '../components/SEO';
 
 const Home = () => {
+    console.log('Home rendering');
     return (
         <div className="min-h-screen bg-dark-bg text-white">
             <SEO
