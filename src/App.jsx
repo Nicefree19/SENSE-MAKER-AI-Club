@@ -12,7 +12,7 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import MemberLogin from './pages/Member/Login';
 import MemberDashboard from './pages/Member/Dashboard';
 import ProjectEditor from './pages/Member/ProjectEditor';
-// import PostEditor from './pages/Member/PostEditor';
+import PostEditor from './pages/Member/PostEditor';
 
 // Layout wrapper for public pages to include Navbar and Footer
 const PublicLayout = ({ children }) => (
@@ -44,7 +44,7 @@ function App() {
         <Route path="/member/login" element={<MemberLogin />} />
         <Route path="/member/dashboard" element={<MemberDashboard />} />
         <Route path="/member/projects/new" element={<ProjectEditor />} />
-        {/* <Route path="/member/posts/new" element={<PostEditor />} /> */}
+        <Route path="/member/posts/new" element={<PostEditor />} />
       </Routes>
     </Router>
   );

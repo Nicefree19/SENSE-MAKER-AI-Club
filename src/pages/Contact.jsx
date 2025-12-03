@@ -1,8 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import SEO from '../components/SEO';
 
 const Contact = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        message: ''
+    });
+    const [status, setStatus] = useState('idle'); // idle, submitting, success, error
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setStatus('submitting');
+
+        try {
+            const { error } = await supabase
+                .from('contact_messages')
+                .insert([
+                    {
+                        name: formData.name,
+                        email: formData.email,
+                        message: formData.message
+                    }
+                ]);
+
+            if (error) throw error;
+
+            setStatus('success');
+            setFormData({ name: '', email: '', message: '' });
+            alert('메시지가 성공적으로 전송되었습니다!');
+        } catch (error) {
+            console.error('Error sending message:', error);
+            setStatus('error');
+            alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
+        }
+    };
+
     return (
         <div className="pt-20 min-h-screen bg-dark-bg text-white">
             <SEO
@@ -19,7 +61,7 @@ const Contact = () => {
                             <Mail className="text-primary mt-1" />
                             <div>
                                 <h3 className="font-medium">이메일</h3>
-                                <p className="text-gray-400">contact@sensemaker.club</p>
+                                <p className="text-gray-400">dhlee@senkuzo.com</p>
                             </div>
                         </div>
                         <div className="flex items-start space-x-4">
@@ -33,26 +75,51 @@ const Contact = () => {
                             <Phone className="text-primary mt-1" />
                             <div>
                                 <h3 className="font-medium">전화번호</h3>
-                                <p className="text-gray-400">+82 10-1234-5678</p>
+                                <p className="text-gray-400">010-4249-7140</p>
                             </div>
                         </div>
                     </div>
 
-                    <form className="space-y-6 bg-dark-surface p-8 rounded-xl border border-white/5">
+                    <form onSubmit={handleSubmit} className="space-y-6 bg-dark-surface p-8 rounded-xl border border-white/5">
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">이름</label>
-                            <input type="text" className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors" />
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">이메일</label>
-                            <input type="email" className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors" />
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors"
+                            />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">메시지</label>
-                            <textarea rows="4" className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors"></textarea>
+                            <textarea
+                                name="message"
+                                rows="4"
+                                value={formData.message}
+                                onChange={handleChange}
+                                required
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary transition-colors"
+                            ></textarea>
                         </div>
-                        <button className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 rounded-lg transition-colors">
-                            메시지 보내기
+                        <button
+                            type="submit"
+                            disabled={status === 'submitting'}
+                            className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            {status === 'submitting' ? '전송 중...' : '메시지 보내기'}
                         </button>
                     </form>
                 </div>
