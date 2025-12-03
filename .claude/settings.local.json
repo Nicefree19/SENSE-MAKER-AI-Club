@@ -12,7 +12,10 @@
       "Bash(git remote set-url:*)",
       "Bash(vercel login)",
       "Bash(vercel:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__playwright-stealth__playwright_navigate",
+      "WebFetch(domain:sensemaker-eight.vercel.app)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

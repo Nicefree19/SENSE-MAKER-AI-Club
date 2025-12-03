@@ -12,6 +12,7 @@ const Navbar = () => {
         { name: '소개', path: '/about' },
         { name: '프로젝트', path: '/projects' },
         { name: '기술 블로그', path: '/blog' },
+        { name: '멤버', path: '/members' },
         { name: '문의하기', path: '/contact' },
     ];
 

@@ -1,19 +1,45 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import MDEditor from '@uiw/react-md-editor';
 import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
 import { postsApi } from '../../lib/database';
-import { Send, Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, Save, Loader2, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const PostEditor = () => {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const isEdit = !!id;
+
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(isEdit);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState('');
+    const [isPublished, setIsPublished] = useState(false);
+
+    useEffect(() => {
+        if (id) {
+            loadPost(id);
+        }
+    }, [id]);
+
+    const loadPost = async (postId) => {
+        try {
+            setInitialLoading(true);
+            const data = await postsApi.getById(postId);
+            setTitle(data.title || '');
+            setContent(data.content || '');
+            setTags(data.tags?.join(', ') || '');
+            setIsPublished(data.published || false);
+        } catch (err) {
+            setError('글을 불러오는데 실패했습니다: ' + err.message);
+        } finally {
+            setInitialLoading(false);
+        }
+    };
 
     const handleSave = async (publish = false) => {
         setLoading(true);
@@ -28,16 +54,23 @@ const PostEditor = () => {
                 throw new Error('내용을 입력해주세요.');
             }
 
-            await postsApi.create({
-                title,
-                content,
-                tags,
-                published: publish
-            });
+            if (isEdit) {
+                await postsApi.update(id, {
+                    title,
+                    content,
+                    tags,
+                    published: publish
+                });
+            } else {
+                await postsApi.create({
+                    title,
+                    content,
+                    tags,
+                    published: publish
+                });
+            }
 
             setSuccess(true);
-
-            // Redirect to dashboard after 1.5 seconds
             setTimeout(() => {
                 navigate('/member/dashboard');
             }, 1500);
@@ -52,11 +85,32 @@ const PostEditor = () => {
         navigate('/member/dashboard');
     };
 
+    if (initialLoading) {
+        return (
+            <MemberLayout>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <Loader2 size={40} className="animate-spin text-primary" />
+                </div>
+            </MemberLayout>
+        );
+    }
+
     return (
         <MemberLayout>
-            <SEO title="새 글 쓰기" description="기술 블로그에 새로운 글을 작성합니다." />
+            <SEO
+                title={isEdit ? "글 수정" : "새 글 쓰기"}
+                description={isEdit ? "기술 블로그 글을 수정합니다." : "기술 블로그에 새로운 글을 작성합니다."}
+            />
 
             <div className="max-w-4xl mx-auto">
+                <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+                >
+                    <ArrowLeft size={20} />
+                    대시보드로 돌아가기
+                </button>
+
                 {error && (
                     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
                         <AlertCircle size={20} />
@@ -67,12 +121,14 @@ const PostEditor = () => {
                 {success && (
                     <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-center gap-3 text-green-400">
                         <CheckCircle size={20} />
-                        <span>글이 성공적으로 저장되었습니다! 대시보드로 이동합니다...</span>
+                        <span>글이 성공적으로 {isEdit ? '수정' : '저장'}되었습니다! 대시보드로 이동합니다...</span>
                     </div>
                 )}
 
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-white">새 글 쓰기</h1>
+                    <h1 className="text-3xl font-bold text-white">
+                        {isEdit ? '글 수정' : '새 글 쓰기'}
+                    </h1>
                     <div className="flex gap-3">
                         <button
                             onClick={handleCancel}
@@ -103,7 +159,7 @@ const PostEditor = () => {
                             ) : (
                                 <Send size={18} />
                             )}
-                            발행하기
+                            {isEdit && isPublished ? '수정하기' : '발행하기'}
                         </button>
                     </div>
                 </div>

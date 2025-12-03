@@ -1,21 +1,54 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
 import { projectsApi } from '../../lib/database';
-import { Save, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const ProjectEditor = () => {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const isEdit = !!id;
+
     const [loading, setLoading] = useState(false);
+    const [initialLoading, setInitialLoading] = useState(isEdit);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         status: 'Planning',
-        techStack: ''
+        techStack: '',
+        githubUrl: '',
+        demoUrl: '',
+        modelUrl: ''
     });
+
+    useEffect(() => {
+        if (id) {
+            loadProject(id);
+        }
+    }, [id]);
+
+    const loadProject = async (projectId) => {
+        try {
+            setInitialLoading(true);
+            const data = await projectsApi.getById(projectId);
+            setFormData({
+                title: data.title || '',
+                description: data.description || '',
+                status: data.status || 'Planning',
+                techStack: data.tech_stack?.join(', ') || '',
+                githubUrl: data.github_url || '',
+                demoUrl: data.demo_url || '',
+                modelUrl: data.model_url || ''
+            });
+        } catch (err) {
+            setError('프로젝트를 불러오는데 실패했습니다: ' + err.message);
+        } finally {
+            setInitialLoading(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,10 +61,13 @@ const ProjectEditor = () => {
                 throw new Error('프로젝트 명을 입력해주세요.');
             }
 
-            await projectsApi.create(formData);
-            setSuccess(true);
+            if (isEdit) {
+                await projectsApi.update(id, formData);
+            } else {
+                await projectsApi.create(formData);
+            }
 
-            // Redirect to dashboard after 1.5 seconds
+            setSuccess(true);
             setTimeout(() => {
                 navigate('/member/dashboard');
             }, 1500);
@@ -46,12 +82,35 @@ const ProjectEditor = () => {
         navigate('/member/dashboard');
     };
 
+    if (initialLoading) {
+        return (
+            <MemberLayout>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <Loader2 size={40} className="animate-spin text-primary" />
+                </div>
+            </MemberLayout>
+        );
+    }
+
     return (
         <MemberLayout>
-            <SEO title="새 프로젝트" description="새로운 프로젝트를 등록합니다." />
+            <SEO
+                title={isEdit ? "프로젝트 수정" : "새 프로젝트"}
+                description={isEdit ? "프로젝트를 수정합니다." : "새로운 프로젝트를 등록합니다."}
+            />
 
             <div className="max-w-3xl mx-auto">
-                <h1 className="text-3xl font-bold text-white mb-8">새 프로젝트 등록</h1>
+                <button
+                    onClick={handleCancel}
+                    className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+                >
+                    <ArrowLeft size={20} />
+                    대시보드로 돌아가기
+                </button>
+
+                <h1 className="text-3xl font-bold text-white mb-8">
+                    {isEdit ? '프로젝트 수정' : '새 프로젝트 등록'}
+                </h1>
 
                 {error && (
                     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
@@ -63,7 +122,7 @@ const ProjectEditor = () => {
                 {success && (
                     <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-center gap-3 text-green-400">
                         <CheckCircle size={20} />
-                        <span>프로젝트가 성공적으로 저장되었습니다! 대시보드로 이동합니다...</span>
+                        <span>프로젝트가 성공적으로 {isEdit ? '수정' : '저장'}되었습니다! 대시보드로 이동합니다...</span>
                     </div>
                 )}
 
@@ -110,6 +169,43 @@ const ProjectEditor = () => {
                     </div>
 
                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">3D 모델 URL (.gltf, .glb)</label>
+                        <input
+                            type="url"
+                            value={formData.modelUrl}
+                            onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
+                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                            placeholder="https://example.com/model.glb"
+                            disabled={loading || success}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">GitHub URL</label>
+                            <input
+                                type="url"
+                                value={formData.githubUrl}
+                                onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                placeholder="https://github.com/..."
+                                disabled={loading || success}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">Demo URL</label>
+                            <input
+                                type="url"
+                                value={formData.demoUrl}
+                                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                placeholder="https://demo.example.com"
+                                disabled={loading || success}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">설명</label>
                         <textarea
                             rows="6"
@@ -138,12 +234,12 @@ const ProjectEditor = () => {
                             {loading ? (
                                 <>
                                     <Loader2 size={20} className="animate-spin" />
-                                    저장 중...
+                                    {isEdit ? '수정 중...' : '저장 중...'}
                                 </>
                             ) : (
                                 <>
                                     <Save size={20} />
-                                    프로젝트 저장
+                                    {isEdit ? '프로젝트 수정' : '프로젝트 저장'}
                                 </>
                             )}
                         </button>

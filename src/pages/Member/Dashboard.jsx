@@ -176,13 +176,22 @@ const MemberDashboard = () => {
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
                                                 {getStatusLabel(project.status)}
                                             </span>
-                                            <button
-                                                onClick={() => handleDeleteProject(project.id)}
-                                                className="p-1.5 text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                                                title="삭제"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link
+                                                    to={`/member/projects/${project.id}/edit`}
+                                                    className="p-1.5 text-gray-500 hover:text-accent transition-colors"
+                                                    title="수정"
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => handleDeleteProject(project.id)}
+                                                    className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
+                                                    title="삭제"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -247,6 +256,13 @@ const MemberDashboard = () => {
                                             >
                                                 {post.published ? <Eye size={16} /> : <EyeOff size={16} />}
                                             </button>
+                                            <Link
+                                                to={`/member/posts/${post.id}/edit`}
+                                                className="p-1.5 text-gray-500 hover:text-green-400 transition-colors"
+                                                title="수정"
+                                            >
+                                                <Edit size={16} />
+                                            </Link>
                                             <button
                                                 onClick={() => handleDeletePost(post.id)}
                                                 className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"

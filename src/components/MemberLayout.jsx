@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, FolderPlus, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, FolderPlus, User, LogOut, Bookmark, Home } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const MemberLayout = ({ children }) => {
@@ -39,7 +39,9 @@ const MemberLayout = ({ children }) => {
         { name: '내 대시보드', icon: <LayoutDashboard size={20} />, path: '/member/dashboard' },
         { name: '새 프로젝트', icon: <FolderPlus size={20} />, path: '/member/projects/new' },
         { name: '새 글 쓰기', icon: <FileText size={20} />, path: '/member/posts/new' },
+        { name: '내 북마크', icon: <Bookmark size={20} />, path: '/member/bookmarks' },
         { name: '프로필 설정', icon: <User size={20} />, path: '/member/profile' },
+        { name: '홈페이지', icon: <Home size={20} />, path: '/' },
     ];
 
     if (loading) {

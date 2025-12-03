@@ -7,10 +7,14 @@ import About from './pages/About';
 import Projects from './pages/Projects';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
+import Members from './pages/Members';
 import AdminLogin from './pages/Admin/Login';
 import AdminDashboard from './pages/Admin/Dashboard';
+import AdminMessages from './pages/Admin/Messages';
 import MemberLogin from './pages/Member/Login';
 import MemberDashboard from './pages/Member/Dashboard';
+import MemberProfile from './pages/Member/Profile';
+import MemberBookmarks from './pages/Member/Bookmarks';
 import ProjectEditor from './pages/Member/ProjectEditor';
 import PostEditor from './pages/Member/PostEditor';
 
@@ -43,8 +47,18 @@ function App() {
         {/* Member Routes (CMS) */}
         <Route path="/member/login" element={<MemberLogin />} />
         <Route path="/member/dashboard" element={<MemberDashboard />} />
+        <Route path="/member/profile" element={<MemberProfile />} />
+        <Route path="/member/bookmarks" element={<MemberBookmarks />} />
         <Route path="/member/projects/new" element={<ProjectEditor />} />
+        <Route path="/member/projects/:id/edit" element={<ProjectEditor />} />
         <Route path="/member/posts/new" element={<PostEditor />} />
+        <Route path="/member/posts/:id/edit" element={<PostEditor />} />
+
+        {/* Admin Messages Route */}
+        <Route path="/admin/messages" element={<AdminMessages />} />
+
+        {/* Public Members Page */}
+        <Route path="/members" element={<PublicLayout><Members /></PublicLayout>} />
       </Routes>
     </Router>
   );

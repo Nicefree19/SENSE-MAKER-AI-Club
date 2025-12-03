@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../components/SEO';
 import { projectsApi } from '../lib/database';
-import { Loader2, Layers, Code, Users } from 'lucide-react';
+import { Loader2, Layers, Code, Users, Box, X } from 'lucide-react';
+import ModelViewer from '../components/ModelViewer';
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedModel, setSelectedModel] = useState(null);
 
     useEffect(() => {
         loadProjects();
@@ -80,15 +82,22 @@ const Projects = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 whileHover={{ y: -5 }}
-                                className="bg-dark-surface rounded-xl border border-white/5 hover:border-accent/30 transition-all overflow-hidden"
+                                className="bg-dark-surface rounded-xl border border-white/5 hover:border-accent/30 transition-all overflow-hidden flex flex-col"
                             >
                                 {/* Project Header */}
-                                <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                                    <Layers size={40} className="text-accent/50" />
+                                <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative group">
+                                    <Layers size={40} className="text-accent/50 group-hover:scale-110 transition-transform duration-300" />
+                                    {project.model_url && (
+                                        <div className="absolute top-2 right-2">
+                                            <span className="bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                                <Box size={12} /> 3D Model
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Project Content */}
-                                <div className="p-6">
+                                <div className="p-6 flex-1 flex flex-col">
                                     <div className="flex items-start justify-between mb-3">
                                         <h3 className="text-xl font-bold text-white">{project.title}</h3>
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
@@ -96,7 +105,7 @@ const Projects = () => {
                                         </span>
                                     </div>
 
-                                    <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+                                    <p className="text-gray-400 text-sm mb-4 line-clamp-3 flex-1">
                                         {project.description || '프로젝트 설명이 없습니다.'}
                                     </p>
 
@@ -115,23 +124,75 @@ const Projects = () => {
                                         </div>
                                     )}
 
-                                    {/* Author */}
-                                    {project.profiles && (
-                                        <div className="flex items-center gap-2 pt-4 border-t border-white/5">
-                                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                                <Users size={12} className="text-primary" />
+                                    {/* Actions */}
+                                    <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                                        {project.profiles && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                                    <Users size={12} className="text-primary" />
+                                                </div>
+                                                <span className="text-sm text-gray-500">
+                                                    {project.profiles.full_name || '익명'}
+                                                </span>
                                             </div>
-                                            <span className="text-sm text-gray-500">
-                                                {project.profiles.full_name || '익명'}
-                                            </span>
-                                        </div>
-                                    )}
+                                        )}
+
+                                        {project.model_url && (
+                                            <button
+                                                onClick={() => setSelectedModel(project)}
+                                                className="flex items-center gap-1 text-sm text-accent hover:text-white transition-colors"
+                                            >
+                                                <Box size={16} />
+                                                3D 보기
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* 3D Model Modal */}
+            <AnimatePresence>
+                {selectedModel && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                        onClick={() => setSelectedModel(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-dark-surface w-full max-w-4xl rounded-xl overflow-hidden border border-white/10 relative"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Box size={20} className="text-accent" />
+                                    {selectedModel.title} - 3D View
+                                </h3>
+                                <button
+                                    onClick={() => setSelectedModel(null)}
+                                    className="text-gray-400 hover:text-white transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            <div className="h-[60vh] bg-gray-900">
+                                <ModelViewer modelUrl={selectedModel.model_url} />
+                            </div>
+                            <div className="p-4 bg-dark-bg text-sm text-gray-400 text-center">
+                                마우스로 모델을 회전하고 확대/축소할 수 있습니다.
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
