@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import MDEditor from '@uiw/react-md-editor';
+// import MDEditor from '@uiw/react-md-editor';
 import SEO from '../components/SEO';
 import { projectsApi } from '../lib/database';
 import { Loader2, ArrowLeft, Calendar, Github, ExternalLink, Code, Users, Box } from 'lucide-react';
@@ -86,8 +86,8 @@ const ProjectDetail = () => {
                             <span>{new Date(project.created_at).toLocaleDateString()}</span>
                         </div>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${project.status === 'Completed' ? 'text-green-400 bg-green-400/10' :
-                                project.status === 'In Progress' ? 'text-accent bg-accent/10' :
-                                    'text-yellow-400 bg-yellow-400/10'
+                            project.status === 'In Progress' ? 'text-accent bg-accent/10' :
+                                'text-yellow-400 bg-yellow-400/10'
                             }`}>
                             {project.status}
                         </span>
@@ -150,10 +150,11 @@ const ProjectDetail = () => {
 
                 {/* Content */}
                 <div className="bg-dark-surface p-8 rounded-xl border border-white/5" data-color-mode="dark">
-                    <MDEditor.Markdown
+                    {/* <MDEditor.Markdown
                         source={project.description}
                         style={{ backgroundColor: 'transparent', color: '#e5e7eb' }}
-                    />
+                    /> */}
+                    <div className="whitespace-pre-wrap">{project.description}</div>
                 </div>
             </div>
         </div>

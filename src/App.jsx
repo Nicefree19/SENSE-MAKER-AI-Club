@@ -18,7 +18,7 @@ import MemberDashboard from './pages/Member/Dashboard';
 import MemberProfile from './pages/Member/Profile';
 import MemberBookmarks from './pages/Member/Bookmarks';
 import ProjectEditor from './pages/Member/ProjectEditor';
-import PostEditor from './pages/Member/PostEditor';
+// import PostEditor from './pages/Member/PostEditor';
 
 // Layout wrapper for public pages to include Navbar and Footer
 const PublicLayout = ({ children }) => (
@@ -55,8 +55,8 @@ function App() {
           <Route path="/member/bookmarks" element={<MemberBookmarks />} />
           <Route path="/member/projects/new" element={<ProjectEditor />} />
           <Route path="/member/projects/:id/edit" element={<ProjectEditor />} />
-          <Route path="/member/posts/new" element={<PostEditor />} />
-          <Route path="/member/posts/:id/edit" element={<PostEditor />} />
+          {/* <Route path="/member/posts/new" element={<PostEditor />} />
+          <Route path="/member/posts/:id/edit" element={<PostEditor />} /> */}
 
           {/* Admin Messages Route */}
           <Route path="/admin/messages" element={<AdminMessages />} />

@@ -5,8 +5,8 @@ import SEO from '../../components/SEO';
 import { projectsApi } from '../../lib/database';
 import { supabase } from '../../lib/supabase';
 import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon } from 'lucide-react';
-import MDEditor from '@uiw/react-md-editor';
-import ImageUploader from '../../components/ImageUploader';
+// import MDEditor from '@uiw/react-md-editor';
+// import ImageUploader from '../../components/ImageUploader';
 import ProjectTeamManager from '../../components/ProjectTeamManager';
 
 const ProjectEditor = () => {
@@ -235,12 +235,17 @@ const ProjectEditor = () => {
                             </div>
 
                             <div data-color-mode="dark">
-                                <MDEditor
+                                {/* <MDEditor
                                     value={formData.description}
                                     onChange={(val) => setFormData({ ...formData, description: val })}
                                     height={400}
                                     style={{ backgroundColor: '#1E293B', color: '#fff' }}
                                     preview="live"
+                                /> */}
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors h-64"
                                 />
                             </div>
                         </div>
