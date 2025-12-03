@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
+import StatsPanel from '../../components/StatsPanel';
 import { Folder, FileText, Clock, Loader2, Trash2, Edit, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -133,6 +134,13 @@ const MemberDashboard = () => {
             {error && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
                     데이터를 불러오는 중 오류가 발생했습니다: {error}
+                </div>
+            )}
+
+            {/* Stats Panel */}
+            {user && (
+                <div className="mb-8">
+                    <StatsPanel userId={user.id} />
                 </div>
             )}
 

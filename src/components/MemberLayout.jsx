@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, FolderPlus, User, LogOut, Bookmark, Home } from 'lucide-react';
+import { LayoutDashboard, FileText, FolderPlus, User, LogOut, Bookmark, Home, Menu, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import NotificationDropdown from './NotificationDropdown';
 
 const MemberLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Check active session
@@ -95,7 +97,61 @@ const MemberLayout = ({ children }) => {
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
-                <div className="p-8">
+                {/* Mobile Header */}
+                <div className="md:hidden sticky top-0 z-40 bg-dark-surface border-b border-white/10 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                        <Link to="/" className="text-lg font-bold text-white tracking-wider">
+                            SENSE MEMBER
+                        </Link>
+                        <div className="flex items-center gap-2">
+                            <NotificationDropdown />
+                            <button
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="p-2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Menu */}
+                    {mobileMenuOpen && (
+                        <nav className="mt-4 space-y-2">
+                            {menuItems.map((item) => (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                                        location.pathname === item.path
+                                            ? 'bg-primary/10 text-primary border border-primary/20'
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                    }`}
+                                >
+                                    {item.icon}
+                                    <span className="font-medium">{item.name}</span>
+                                </Link>
+                            ))}
+                            <button
+                                onClick={() => {
+                                    handleLogout();
+                                    setMobileMenuOpen(false);
+                                }}
+                                className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                            >
+                                <LogOut size={20} />
+                                <span className="font-medium">로그아웃</span>
+                            </button>
+                        </nav>
+                    )}
+                </div>
+
+                {/* Desktop Header with Notifications */}
+                <div className="hidden md:flex sticky top-0 z-40 bg-dark-bg/80 backdrop-blur-sm border-b border-white/5 px-8 py-3 justify-end">
+                    <NotificationDropdown />
+                </div>
+
+                <div className="p-4 md:p-8">
                     {children}
                 </div>
             </main>

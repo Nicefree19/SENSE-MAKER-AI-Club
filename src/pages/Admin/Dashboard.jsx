@@ -1,24 +1,118 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import SEO from '../../components/SEO';
-import { Users, Eye, Activity, Database } from 'lucide-react';
+import ActivityTimeline from '../../components/ActivityTimeline';
+import { supabase } from '../../lib/supabase';
+import {
+    Users,
+    Eye,
+    Activity,
+    FileText,
+    FolderKanban,
+    MessageSquare,
+    Mail,
+    TrendingUp,
+    Loader2
+} from 'lucide-react';
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const [stats, setStats] = useState({
+        members: 0,
+        projects: 0,
+        posts: 0,
+        comments: 0,
+        messages: 0,
+        views: 0
+    });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const isAuth = localStorage.getItem('isAuthenticated');
         if (!isAuth) {
             navigate('/admin');
+        } else {
+            loadStats();
         }
     }, [navigate]);
 
-    const stats = [
-        { title: '총 방문자 수', value: '1,234', icon: <Eye size={24} />, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-        { title: '활성 프로젝트', value: '4', icon: <Activity size={24} />, color: 'text-green-400', bg: 'bg-green-400/10' },
-        { title: '동아리 회원', value: '12', icon: <Users size={24} />, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-        { title: '데이터 포인트', value: '8.5k', icon: <Database size={24} />, color: 'text-orange-400', bg: 'bg-orange-400/10' },
+    const loadStats = async () => {
+        try {
+            setLoading(true);
+
+            // Fetch counts from Supabase
+            const [
+                { count: membersCount },
+                { count: projectsCount },
+                { count: postsCount },
+                { count: messagesCount }
+            ] = await Promise.all([
+                supabase.from('profiles').select('*', { count: 'exact', head: true }),
+                supabase.from('projects').select('*', { count: 'exact', head: true }),
+                supabase.from('posts').select('*', { count: 'exact', head: true }).eq('published', true),
+                supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false)
+            ]);
+
+            // Get total views
+            const { data: postsData } = await supabase
+                .from('posts')
+                .select('view_count');
+
+            const totalViews = postsData?.reduce((sum, p) => sum + (p.view_count || 0), 0) || 0;
+
+            setStats({
+                members: membersCount || 0,
+                projects: projectsCount || 0,
+                posts: postsCount || 0,
+                comments: 0,
+                messages: messagesCount || 0,
+                views: totalViews
+            });
+        } catch (err) {
+            console.error('Failed to load stats:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const statCards = [
+        {
+            title: '총 멤버',
+            value: stats.members,
+            icon: <Users size={24} />,
+            color: 'text-purple-400',
+            bg: 'bg-purple-400/10'
+        },
+        {
+            title: '프로젝트',
+            value: stats.projects,
+            icon: <FolderKanban size={24} />,
+            color: 'text-accent',
+            bg: 'bg-accent/10'
+        },
+        {
+            title: '발행된 글',
+            value: stats.posts,
+            icon: <FileText size={24} />,
+            color: 'text-green-400',
+            bg: 'bg-green-400/10'
+        },
+        {
+            title: '총 조회수',
+            value: stats.views.toLocaleString(),
+            icon: <Eye size={24} />,
+            color: 'text-blue-400',
+            bg: 'bg-blue-400/10'
+        },
+        {
+            title: '미확인 문의',
+            value: stats.messages,
+            icon: <Mail size={24} />,
+            color: stats.messages > 0 ? 'text-red-400' : 'text-gray-400',
+            bg: stats.messages > 0 ? 'bg-red-400/10' : 'bg-gray-400/10',
+            link: '/admin/messages'
+        }
     ];
 
     return (
@@ -30,40 +124,104 @@ const Dashboard = () => {
                 <p className="text-gray-400 mt-2">환영합니다, 관리자님.</p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-dark-surface p-6 rounded-xl border border-white/5">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
-                                {stat.icon}
-                            </div>
-                            <span className="text-green-400 text-sm font-medium">+12%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
-                        <p className="text-gray-400 text-sm">{stat.title}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Recent Activity Placeholder */}
-            <div className="bg-dark-surface rounded-xl border border-white/5 p-6">
-                <h2 className="text-xl font-bold text-white mb-6">최근 시스템 활동</h2>
-                <div className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                        <div key={item} className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                <div>
-                                    <p className="text-white font-medium">새 프로젝트 "ADS v2.0" 생성됨</p>
-                                    <p className="text-gray-400 text-sm">관리자에 의해 업데이트됨</p>
-                                </div>
-                            </div>
-                            <span className="text-gray-500 text-sm">2시간 전</span>
-                        </div>
-                    ))}
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 size={40} className="animate-spin text-primary" />
                 </div>
-            </div>
+            ) : (
+                <>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        {statCards.map((stat, index) => (
+                            <div
+                                key={index}
+                                className={`bg-dark-surface p-5 rounded-xl border border-white/5 ${stat.link ? 'cursor-pointer hover:border-primary/30 transition-colors' : ''}`}
+                                onClick={() => stat.link && navigate(stat.link)}
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className={`p-2.5 rounded-lg ${stat.bg} ${stat.color}`}>
+                                        {stat.icon}
+                                    </div>
+                                    {stat.link && stat.value > 0 && (
+                                        <span className="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-400">
+                                            확인 필요
+                                        </span>
+                                    )}
+                                </div>
+                                <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
+                                <p className="text-gray-400 text-sm">{stat.title}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Recent Activity */}
+                        <div className="bg-dark-surface rounded-xl border border-white/5 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Activity size={20} className="text-primary" />
+                                    최근 활동
+                                </h2>
+                            </div>
+                            <ActivityTimeline limit={5} />
+                        </div>
+
+                        {/* Quick Links */}
+                        <div className="bg-dark-surface rounded-xl border border-white/5 p-6">
+                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <TrendingUp size={20} className="text-accent" />
+                                빠른 메뉴
+                            </h2>
+                            <div className="space-y-3">
+                                <Link
+                                    to="/admin/messages"
+                                    className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5 hover:border-primary/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Mail size={20} className="text-primary" />
+                                        <span className="text-white">문의 메시지 관리</span>
+                                    </div>
+                                    {stats.messages > 0 && (
+                                        <span className="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded-full">
+                                            {stats.messages}
+                                        </span>
+                                    )}
+                                </Link>
+
+                                <Link
+                                    to="/members"
+                                    className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5 hover:border-primary/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Users size={20} className="text-purple-400" />
+                                        <span className="text-white">멤버 목록 보기</span>
+                                    </div>
+                                </Link>
+
+                                <Link
+                                    to="/projects"
+                                    className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5 hover:border-primary/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <FolderKanban size={20} className="text-accent" />
+                                        <span className="text-white">프로젝트 보기</span>
+                                    </div>
+                                </Link>
+
+                                <Link
+                                    to="/blog"
+                                    className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5 hover:border-primary/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <FileText size={20} className="text-green-400" />
+                                        <span className="text-white">블로그 보기</span>
+                                    </div>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </AdminLayout>
     );
 };

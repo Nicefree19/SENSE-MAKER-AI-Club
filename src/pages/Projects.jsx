@@ -97,16 +97,16 @@ const Projects = () => {
                                 </div>
 
                                 {/* Project Content */}
-                                <div className="p-6 flex-1 flex flex-col">
+                                <div className="p-6 flex-1 flex flex-col cursor-pointer" onClick={() => window.location.hash = `#/projects/${project.id}`}>
                                     <div className="flex items-start justify-between mb-3">
-                                        <h3 className="text-xl font-bold text-white">{project.title}</h3>
+                                        <h3 className="text-xl font-bold text-white hover:text-primary transition-colors">{project.title}</h3>
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
                                             {getStatusLabel(project.status)}
                                         </span>
                                     </div>
 
                                     <p className="text-gray-400 text-sm mb-4 line-clamp-3 flex-1">
-                                        {project.description || '프로젝트 설명이 없습니다.'}
+                                        {project.description ? project.description.replace(/[#*`]/g, '') : '프로젝트 설명이 없습니다.'}
                                     </p>
 
                                     {/* Tech Stack */}
@@ -139,7 +139,10 @@ const Projects = () => {
 
                                         {project.model_url && (
                                             <button
-                                                onClick={() => setSelectedModel(project)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedModel(project);
+                                                }}
                                                 className="flex items-center gap-1 text-sm text-accent hover:text-white transition-colors"
                                             >
                                                 <Box size={16} />

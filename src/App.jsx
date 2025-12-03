@@ -1,10 +1,12 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 import Blog from './pages/Blog';
 import Contact from './pages/Contact';
 import Members from './pages/Members';
@@ -31,36 +33,39 @@ const PublicLayout = ({ children }) => (
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
-        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
-        <Route path="/projects" element={<PublicLayout><Projects /></PublicLayout>} />
-        <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
-        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+          <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+          <Route path="/projects" element={<PublicLayout><Projects /></PublicLayout>} />
+          <Route path="/projects/:id" element={<PublicLayout><ProjectDetail /></PublicLayout>} />
+          <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
+          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
 
-        {/* Admin Routes (Legacy/System Admin) */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          {/* Admin Routes (Legacy/System Admin) */}
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-        {/* Member Routes (CMS) */}
-        <Route path="/member/login" element={<MemberLogin />} />
-        <Route path="/member/dashboard" element={<MemberDashboard />} />
-        <Route path="/member/profile" element={<MemberProfile />} />
-        <Route path="/member/bookmarks" element={<MemberBookmarks />} />
-        <Route path="/member/projects/new" element={<ProjectEditor />} />
-        <Route path="/member/projects/:id/edit" element={<ProjectEditor />} />
-        <Route path="/member/posts/new" element={<PostEditor />} />
-        <Route path="/member/posts/:id/edit" element={<PostEditor />} />
+          {/* Member Routes (CMS) */}
+          <Route path="/member/login" element={<MemberLogin />} />
+          <Route path="/member/dashboard" element={<MemberDashboard />} />
+          <Route path="/member/profile" element={<MemberProfile />} />
+          <Route path="/member/bookmarks" element={<MemberBookmarks />} />
+          <Route path="/member/projects/new" element={<ProjectEditor />} />
+          <Route path="/member/projects/:id/edit" element={<ProjectEditor />} />
+          <Route path="/member/posts/new" element={<PostEditor />} />
+          <Route path="/member/posts/:id/edit" element={<PostEditor />} />
 
-        {/* Admin Messages Route */}
-        <Route path="/admin/messages" element={<AdminMessages />} />
+          {/* Admin Messages Route */}
+          <Route path="/admin/messages" element={<AdminMessages />} />
 
-        {/* Public Members Page */}
-        <Route path="/members" element={<PublicLayout><Members /></PublicLayout>} />
-      </Routes>
-    </Router>
+          {/* Public Members Page */}
+          <Route path="/members" element={<PublicLayout><Members /></PublicLayout>} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

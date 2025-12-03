@@ -69,6 +69,40 @@ export const projectsApi = {
         if (!user) throw new Error('User not authenticated');
 
         const { data, error } = await supabase
+            .from('projects')
+            .insert({
+                title: project.title,
+                description: project.description,
+                status: project.status || 'Planning',
+                tech_stack: project.techStack ? project.techStack.split(',').map(t => t.trim()).filter(Boolean) : [],
+                github_url: project.githubUrl || null,
+                demo_url: project.demoUrl || null,
+                model_url: project.modelUrl || null,
+                author_id: user.id
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Update project
+    async update(id, project) {
+        const { data, error } = await supabase
+            .from('projects')
+            .update({
+                title: project.title,
+                description: project.description,
+                status: project.status || 'Planning',
+                tech_stack: project.techStack ? project.techStack.split(',').map(t => t.trim()).filter(Boolean) : [],
+                github_url: project.githubUrl || null,
+                demo_url: project.demoUrl || null,
+                model_url: project.modelUrl || null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
             .single();
 
         if (error) throw error;
@@ -93,6 +127,106 @@ export const projectsApi = {
             row_id: id
         });
         if (error) console.error('Failed to increment view:', error);
+    }
+};
+
+// ============================================
+// PROJECT MEMBERS (Collaboration)
+// ============================================
+
+export const projectMembersApi = {
+    // Get project members
+    async getByProjectId(projectId) {
+        const { data, error } = await supabase
+            .from('project_members')
+            .select(`
+                *,
+                profiles:user_id (id, full_name, avatar_url, email)
+            `)
+            .eq('project_id', projectId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Add member to project
+    async addMember(projectId, userId, role = 'member') {
+        const { data, error } = await supabase
+            .from('project_members')
+            .insert({
+                project_id: projectId,
+                user_id: userId,
+                role: role
+            })
+            .select(`
+                *,
+                profiles:user_id (id, full_name, avatar_url, email)
+            `)
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Update member role
+    async updateRole(projectId, userId, role) {
+        const { data, error } = await supabase
+            .from('project_members')
+            .update({ role })
+            .eq('project_id', projectId)
+            .eq('user_id', userId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Remove member from project
+    async removeMember(projectId, userId) {
+        const { error } = await supabase
+            .from('project_members')
+            .delete()
+            .eq('project_id', projectId)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return true;
+    },
+
+    // Check if user is member of project
+    async isMember(projectId, userId) {
+        const { data, error } = await supabase
+            .from('project_members')
+            .select('id, role')
+            .eq('project_id', projectId)
+            .eq('user_id', userId)
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+    },
+
+    // Get projects where user is a member
+    async getMyProjects() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        const { data, error } = await supabase
+            .from('project_members')
+            .select(`
+                role,
+                projects:project_id (
+                    *,
+                    profiles:author_id (full_name, avatar_url)
+                )
+            `)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
     }
 };
 

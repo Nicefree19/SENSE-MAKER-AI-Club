@@ -3,7 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
 import { projectsApi } from '../../lib/database';
-import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon } from 'lucide-react';
+import MDEditor from '@uiw/react-md-editor';
+import ImageUploader from '../../components/ImageUploader';
+import ProjectTeamManager from '../../components/ProjectTeamManager';
 
 const ProjectEditor = () => {
     const navigate = useNavigate();
@@ -23,10 +27,17 @@ const ProjectEditor = () => {
         demoUrl: '',
         modelUrl: ''
     });
+    const [authorId, setAuthorId] = useState(null);
+    const [showTeamPanel, setShowTeamPanel] = useState(false);
 
     useEffect(() => {
         if (id) {
             loadProject(id);
+        } else {
+            // 새 프로젝트의 경우 현재 사용자를 author로 설정
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user) setAuthorId(user.id);
+            });
         }
     }, [id]);
 
@@ -43,6 +54,7 @@ const ProjectEditor = () => {
                 demoUrl: data.demo_url || '',
                 modelUrl: data.model_url || ''
             });
+            setAuthorId(data.author_id);
         } catch (err) {
             setError('프로젝트를 불러오는데 실패했습니다: ' + err.message);
         } finally {
@@ -206,15 +218,32 @@ const ProjectEditor = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">설명</label>
-                        <textarea
-                            rows="6"
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="프로젝트에 대한 상세 설명을 입력하세요..."
-                            disabled={loading || success}
-                        ></textarea>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">설명 (Markdown 지원)</label>
+                        <div className="space-y-4">
+                            <div className="bg-dark-bg p-4 rounded-lg border border-white/10">
+                                <p className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+                                    <ImageIcon size={16} />
+                                    이미지 업로드 (드래그 앤 드롭으로 본문에 자동 삽입)
+                                </p>
+                                <ImageUploader onUploadComplete={(url) => {
+                                    const imageMarkdown = `![이미지 설명](${url})`;
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        description: prev.description ? prev.description + '\n' + imageMarkdown : imageMarkdown
+                                    }));
+                                }} />
+                            </div>
+
+                            <div data-color-mode="dark">
+                                <MDEditor
+                                    value={formData.description}
+                                    onChange={(val) => setFormData({ ...formData, description: val })}
+                                    height={400}
+                                    style={{ backgroundColor: '#1E293B', color: '#fff' }}
+                                    preview="live"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex justify-end gap-4 pt-4">
@@ -245,6 +274,33 @@ const ProjectEditor = () => {
                         </button>
                     </div>
                 </form>
+
+                {/* Team Management Section - Only show for existing projects */}
+                {isEdit && authorId && (
+                    <div className="mt-8 bg-dark-surface p-6 rounded-xl border border-white/5">
+                        <button
+                            onClick={() => setShowTeamPanel(!showTeamPanel)}
+                            className="w-full flex items-center justify-between text-left"
+                        >
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Users size={20} className="text-purple-400" />
+                                팀원 관리
+                            </h2>
+                            <span className="text-gray-400 text-sm">
+                                {showTeamPanel ? '접기' : '펼치기'}
+                            </span>
+                        </button>
+
+                        {showTeamPanel && (
+                            <div className="mt-6 pt-6 border-t border-white/10">
+                                <ProjectTeamManager
+                                    projectId={id}
+                                    authorId={authorId}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </MemberLayout>
     );
