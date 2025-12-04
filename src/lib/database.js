@@ -78,6 +78,7 @@ export const projectsApi = {
                 github_url: project.githubUrl || null,
                 demo_url: project.demoUrl || null,
                 model_url: project.modelUrl || null,
+                layout_config: project.layoutConfig || {},
                 author_id: user.id
             })
             .select()
@@ -99,6 +100,7 @@ export const projectsApi = {
                 github_url: project.githubUrl || null,
                 demo_url: project.demoUrl || null,
                 model_url: project.modelUrl || null,
+                layout_config: project.layoutConfig || {},
                 updated_at: new Date().toISOString()
             })
             .eq('id', id)

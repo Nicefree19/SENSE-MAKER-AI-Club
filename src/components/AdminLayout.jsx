@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Users, Settings, LogOut } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const handleLogout = () => {
-        localStorage.removeItem('isAuthenticated');
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
         navigate('/admin');
     };
 
@@ -32,8 +33,8 @@ const AdminLayout = ({ children }) => {
                             key={item.path}
                             to={item.path}
                             className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === item.path
-                                    ? 'bg-primary/10 text-primary border border-primary/20'
-                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                ? 'bg-primary/10 text-primary border border-primary/20'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             {item.icon}

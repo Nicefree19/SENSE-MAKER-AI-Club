@@ -4,9 +4,9 @@ import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
 import { projectsApi } from '../../lib/database';
 import { supabase } from '../../lib/supabase';
-import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon } from 'lucide-react';
-// import MDEditor from '@uiw/react-md-editor';
-// import ImageUploader from '../../components/ImageUploader';
+import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon, Box } from 'lucide-react';
+import MDEditor from '@uiw/react-md-editor';
+import ImageUploader from '../../components/ImageUploader';
 import ProjectTeamManager from '../../components/ProjectTeamManager';
 
 const ProjectEditor = () => {
@@ -25,7 +25,12 @@ const ProjectEditor = () => {
         techStack: '',
         githubUrl: '',
         demoUrl: '',
-        modelUrl: ''
+        modelUrl: '',
+        layoutConfig: {
+            theme: 'default', // default, blue, purple, green
+            layout: 'standard', // standard, full-width, hero-image
+            showTeam: true
+        }
     });
     const [authorId, setAuthorId] = useState(null);
     const [showTeamPanel, setShowTeamPanel] = useState(false);
@@ -52,7 +57,8 @@ const ProjectEditor = () => {
                 techStack: data.tech_stack?.join(', ') || '',
                 githubUrl: data.github_url || '',
                 demoUrl: data.demo_url || '',
-                modelUrl: data.model_url || ''
+                modelUrl: data.model_url || '',
+                layoutConfig: data.layout_config || { theme: 'default', layout: 'standard', showTeam: true }
             });
             setAuthorId(data.author_id);
         } catch (err) {
@@ -217,6 +223,48 @@ const ProjectEditor = () => {
                         </div>
                     </div>
 
+                    {/* Customization Section */}
+                    <div className="bg-dark-bg p-6 rounded-lg border border-white/10 space-y-4">
+                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                            <Box size={20} className="text-accent" />
+                            페이지 커스터마이징
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">테마 색상</label>
+                                <select
+                                    value={formData.layoutConfig.theme}
+                                    onChange={(e) => setFormData({
+                                        ...formData,
+                                        layoutConfig: { ...formData.layoutConfig, theme: e.target.value }
+                                    })}
+                                    className="w-full bg-dark-surface border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                >
+                                    <option value="default">기본 (Dark)</option>
+                                    <option value="blue">Ocean Blue</option>
+                                    <option value="purple">Neon Purple</option>
+                                    <option value="green">Forest Green</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">레이아웃 스타일</label>
+                                <select
+                                    value={formData.layoutConfig.layout}
+                                    onChange={(e) => setFormData({
+                                        ...formData,
+                                        layoutConfig: { ...formData.layoutConfig, layout: e.target.value }
+                                    })}
+                                    className="w-full bg-dark-surface border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                >
+                                    <option value="standard">표준 (Standard)</option>
+                                    <option value="full-width">전체 너비 (Full Width)</option>
+                                    <option value="hero-image">히어로 이미지 강조</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">설명 (Markdown 지원)</label>
                         <div className="space-y-4">
@@ -235,17 +283,12 @@ const ProjectEditor = () => {
                             </div>
 
                             <div data-color-mode="dark">
-                                {/* <MDEditor
+                                <MDEditor
                                     value={formData.description}
                                     onChange={(val) => setFormData({ ...formData, description: val })}
                                     height={400}
                                     style={{ backgroundColor: '#1E293B', color: '#fff' }}
                                     preview="live"
-                                /> */}
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors h-64"
                                 />
                             </div>
                         </div>

@@ -1,20 +1,44 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Lock, Loader2 } from 'lucide-react';
 import SEO from '../../components/SEO';
 
 const Login = () => {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Mock authentication - in a real app, this would verify against a backend
-        if (password === 'sense2025') {
-            localStorage.setItem('isAuthenticated', 'true');
+        setLoading(true);
+
+        try {
+            const { data: { user }, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            // Check if user has admin role
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.role !== 'admin') {
+                await supabase.auth.signOut();
+                throw new Error('관리자 권한이 없습니다.');
+            }
+
             navigate('/admin/dashboard');
-        } else {
-            alert('비밀번호가 올바르지 않습니다.');
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -33,6 +57,19 @@ const Login = () => {
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
+                            이메일
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                            placeholder="admin@sensemaker.com"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
                             비밀번호
                         </label>
                         <input
@@ -40,14 +77,23 @@ const Login = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="관리자 비밀번호 입력"
+                            placeholder="비밀번호 입력"
+                            required
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 rounded-lg transition-colors"
+                        disabled={loading}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
-                        로그인
+                        {loading ? (
+                            <>
+                                <Loader2 size={20} className="animate-spin" />
+                                로그인 중...
+                            </>
+                        ) : (
+                            '로그인'
+                        )}
                     </button>
                 </form>
             </div>

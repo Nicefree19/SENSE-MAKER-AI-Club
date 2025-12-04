@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabase';
 import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState(null);
     const location = useLocation();
+
+    React.useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const navLinks = [
         { name: '홈', path: '/' },
@@ -35,18 +49,28 @@ const Navbar = () => {
                                     key={link.name}
                                     to={link.path}
                                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${location.pathname === link.path
-                                            ? 'text-accent-glow bg-white/5'
-                                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                        ? 'text-accent-glow bg-white/5'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/5'
                                         }`}
                                 >
                                     {link.name}
                                 </Link>
                             ))}
                             <Link
-                                to="/contact"
-                                className="ml-4 px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-primary to-primary-dark text-white hover:opacity-90 transition-opacity"
+                                to={user ? "/member/dashboard" : "/member/login"}
+                                className="ml-4 px-4 py-2 rounded-md text-sm font-medium bg-gradient-to-r from-primary to-primary-dark text-white hover:opacity-90 transition-opacity flex items-center gap-2"
                             >
-                                동아리 가입
+                                {user ? (
+                                    <>
+                                        <LayoutDashboard size={16} />
+                                        대시보드
+                                    </>
+                                ) : (
+                                    <>
+                                        <User size={16} />
+                                        멤버 로그인
+                                    </>
+                                )}
                             </Link>
                             <ThemeToggle size="small" />
                         </div>
@@ -81,19 +105,29 @@ const Navbar = () => {
                                     to={link.path}
                                     onClick={() => setIsOpen(false)}
                                     className={`block px-3 py-2 rounded-md text-base font-medium ${location.pathname === link.path
-                                            ? 'text-accent-glow bg-white/5'
-                                            : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                        ? 'text-accent-glow bg-white/5'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/5'
                                         }`}
                                 >
                                     {link.name}
                                 </Link>
                             ))}
                             <Link
-                                to="/contact"
+                                to={user ? "/member/dashboard" : "/member/login"}
                                 onClick={() => setIsOpen(false)}
-                                className="block w-full text-center mt-4 px-4 py-2 rounded-md text-base font-medium bg-gradient-to-r from-primary to-primary-dark text-white"
+                                className="block w-full text-center mt-4 px-4 py-2 rounded-md text-base font-medium bg-gradient-to-r from-primary to-primary-dark text-white flex items-center justify-center gap-2"
                             >
-                                동아리 가입
+                                {user ? (
+                                    <>
+                                        <LayoutDashboard size={18} />
+                                        대시보드
+                                    </>
+                                ) : (
+                                    <>
+                                        <User size={18} />
+                                        멤버 로그인
+                                    </>
+                                )}
                             </Link>
                         </div>
                     </motion.div>

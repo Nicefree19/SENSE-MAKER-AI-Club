@@ -29,13 +29,30 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const isAuth = localStorage.getItem('isAuthenticated');
-        if (!isAuth) {
-            navigate('/admin');
-        } else {
-            loadStats();
-        }
+        checkAuth();
     }, [navigate]);
+
+    const checkAuth = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            navigate('/admin');
+            return;
+        }
+
+        // Verify admin role
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') {
+            navigate('/admin');
+            return;
+        }
+
+        loadStats();
+    };
 
     const loadStats = async () => {
         try {
