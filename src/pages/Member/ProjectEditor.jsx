@@ -24,8 +24,6 @@ const ProjectEditor = () => {
         status: 'Planning',
         techStack: '',
         githubUrl: '',
-        demoUrl: '',
-        modelUrl: '',
         layoutConfig: {
             theme: 'default', // default, blue, purple, green
             layout: 'standard', // standard, full-width, hero-image
@@ -56,8 +54,6 @@ const ProjectEditor = () => {
                 status: data.status || 'Planning',
                 techStack: data.tech_stack?.join(', ') || '',
                 githubUrl: data.github_url || '',
-                demoUrl: data.demo_url || '',
-                modelUrl: data.model_url || '',
                 layoutConfig: data.layout_config || { theme: 'default', layout: 'standard', showTeam: true }
             });
             setAuthorId(data.author_id);
@@ -68,7 +64,7 @@ const ProjectEditor = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, published = true) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -79,10 +75,12 @@ const ProjectEditor = () => {
                 throw new Error('프로젝트 명을 입력해주세요.');
             }
 
+            const projectData = { ...formData, published };
+
             if (isEdit) {
-                await projectsApi.update(id, formData);
+                await projectsApi.update(id, projectData);
             } else {
-                await projectsApi.create(formData);
+                await projectsApi.create(projectData);
             }
 
             setSuccess(true);
@@ -144,7 +142,7 @@ const ProjectEditor = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="bg-dark-surface p-8 rounded-xl border border-white/5 space-y-6">
+                <form onSubmit={(e) => handleSubmit(e, true)} className="bg-dark-surface p-8 rounded-xl border border-white/5 space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             프로젝트 명 <span className="text-red-400">*</span>
@@ -187,40 +185,15 @@ const ProjectEditor = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">3D 모델 URL (.gltf, .glb)</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">GitHub URL (선택)</label>
                         <input
                             type="url"
-                            value={formData.modelUrl}
-                            onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
+                            value={formData.githubUrl}
+                            onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
                             className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="https://example.com/model.glb"
+                            placeholder="https://github.com/..."
                             disabled={loading || success}
                         />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">GitHub URL</label>
-                            <input
-                                type="url"
-                                value={formData.githubUrl}
-                                onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                placeholder="https://github.com/..."
-                                disabled={loading || success}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Demo URL</label>
-                            <input
-                                type="url"
-                                value={formData.demoUrl}
-                                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
-                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                placeholder="https://demo.example.com"
-                                disabled={loading || success}
-                            />
-                        </div>
                     </div>
 
                     {/* Customization Section */}
@@ -304,6 +277,15 @@ const ProjectEditor = () => {
                             취소
                         </button>
                         <button
+                            type="button"
+                            onClick={(e) => handleSubmit(e, false)}
+                            disabled={loading || success}
+                            className="bg-dark-surface border border-white/20 hover:bg-white/5 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                            임시저장
+                        </button>
+                        <button
                             type="submit"
                             disabled={loading || success}
                             className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -311,12 +293,12 @@ const ProjectEditor = () => {
                             {loading ? (
                                 <>
                                     <Loader2 size={20} className="animate-spin" />
-                                    {isEdit ? '수정 중...' : '저장 중...'}
+                                    {isEdit ? '수정 중...' : '등록 중...'}
                                 </>
                             ) : (
                                 <>
-                                    <Save size={20} />
-                                    {isEdit ? '프로젝트 수정' : '프로젝트 저장'}
+                                    <CheckCircle size={20} />
+                                    {isEdit ? '프로젝트 수정' : '프로젝트 등록'}
                                 </>
                             )}
                         </button>

@@ -21,6 +21,10 @@ export const projectsApi = {
         if (status) {
             query = query.eq('status', status);
         }
+
+        // Only show published projects in public list
+        query = query.eq('published', true);
+
         if (search) {
             query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
         }
@@ -79,6 +83,7 @@ export const projectsApi = {
                 demo_url: project.demoUrl || null,
                 model_url: project.modelUrl || null,
                 layout_config: project.layoutConfig || {},
+                published: project.published || false,
                 author_id: user.id
             })
             .select()
@@ -101,6 +106,7 @@ export const projectsApi = {
                 demo_url: project.demoUrl || null,
                 model_url: project.modelUrl || null,
                 layout_config: project.layoutConfig || {},
+                published: project.published,
                 updated_at: new Date().toISOString()
             })
             .eq('id', id)
