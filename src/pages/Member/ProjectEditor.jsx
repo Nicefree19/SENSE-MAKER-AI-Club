@@ -24,6 +24,8 @@ const ProjectEditor = () => {
         status: 'Planning',
         techStack: '',
         githubUrl: '',
+        demoUrl: '',
+        modelUrl: '',
         layoutConfig: {
             theme: 'default', // default, blue, purple, green
             layout: 'standard', // standard, full-width, hero-image
@@ -54,6 +56,8 @@ const ProjectEditor = () => {
                 status: data.status || 'Planning',
                 techStack: data.tech_stack?.join(', ') || '',
                 githubUrl: data.github_url || '',
+                demoUrl: data.demo_url || '',
+                modelUrl: data.model_url || '',
                 layoutConfig: data.layout_config || { theme: 'default', layout: 'standard', showTeam: true }
             });
             setAuthorId(data.author_id);
@@ -194,6 +198,31 @@ const ProjectEditor = () => {
                             placeholder="https://github.com/..."
                             disabled={loading || success}
                         />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">데모 URL (선택)</label>
+                            <input
+                                type="url"
+                                value={formData.demoUrl}
+                                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                placeholder="https://demo.example.com"
+                                disabled={loading || success}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">3D 모델 URL (선택)</label>
+                            <input
+                                type="url"
+                                value={formData.modelUrl}
+                                onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
+                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                placeholder="https://models.example.com/model.glb"
+                                disabled={loading || success}
+                            />
+                        </div>
                     </div>
 
                     {/* Customization Section */}
