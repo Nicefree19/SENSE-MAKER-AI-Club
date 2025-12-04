@@ -18,8 +18,9 @@ const Projects = () => {
     const loadProjects = async () => {
         try {
             setLoading(true);
-            const data = await projectsApi.getAll();
-            setProjects(data || []);
+            const result = await projectsApi.getAll();
+            // API returns { data, count, page, limit, totalPages }
+            setProjects(result?.data || []);
         } catch (err) {
             console.error('Error loading projects:', err);
             setError(err.message);
