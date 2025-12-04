@@ -27,8 +27,8 @@ const Blog = () => {
     const loadPosts = async () => {
         try {
             setLoading(true);
-            const data = await postsApi.getPublished();
-            setPosts(data || []);
+            const response = await postsApi.getPublished();
+            setPosts(response?.data || []);
         } catch (err) {
             console.error('Error loading posts:', err);
             setError(err.message);
@@ -141,11 +141,10 @@ const Blog = () => {
                         {/* Filter Toggle Button */}
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
-                                showFilters || hasActiveFilters
+                            className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${showFilters || hasActiveFilters
                                     ? 'bg-primary/10 border-primary text-primary'
                                     : 'bg-dark-surface border-white/10 text-gray-400 hover:text-white'
-                            }`}
+                                }`}
                         >
                             <Filter size={18} />
                             필터
@@ -186,11 +185,10 @@ const Blog = () => {
                                             <button
                                                 key={tag}
                                                 onClick={() => setSelectedTag(selectedTag === tag ? '' : tag)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                                                    selectedTag === tag
+                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedTag === tag
                                                         ? 'bg-primary text-white'
                                                         : 'bg-white/5 text-gray-400 hover:text-white'
-                                                }`}
+                                                    }`}
                                             >
                                                 #{tag}
                                             </button>
@@ -336,11 +334,10 @@ const Blog = () => {
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                                            currentPage === page
+                                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page
                                                 ? 'bg-primary text-white'
                                                 : 'bg-dark-surface border border-white/10 text-gray-400 hover:text-white'
-                                        }`}
+                                            }`}
                                     >
                                         {page}
                                     </button>
