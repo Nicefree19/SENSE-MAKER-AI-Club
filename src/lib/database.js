@@ -80,8 +80,6 @@ export const projectsApi = {
                 status: project.status || 'Planning',
                 tech_stack: project.techStack ? project.techStack.split(',').map(t => t.trim()).filter(Boolean) : [],
                 github_url: project.githubUrl || null,
-                demo_url: project.demoUrl || null,
-                model_url: project.modelUrl || null,
                 layout_config: project.layoutConfig || {},
                 published: project.published || false,
                 author_id: user.id
@@ -103,8 +101,6 @@ export const projectsApi = {
                 status: project.status || 'Planning',
                 tech_stack: project.techStack ? project.techStack.split(',').map(t => t.trim()).filter(Boolean) : [],
                 github_url: project.githubUrl || null,
-                demo_url: project.demoUrl || null,
-                model_url: project.modelUrl || null,
                 layout_config: project.layoutConfig || {},
                 published: project.published,
                 updated_at: new Date().toISOString()
