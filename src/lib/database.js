@@ -423,7 +423,8 @@ export const profilesApi = {
 
         const { data, error } = await supabase
             .from('profiles')
-            .update({
+            .upsert({
+                id: user.id,
                 username: profile.username,
                 full_name: profile.fullName,
                 avatar_url: profile.avatarUrl,
@@ -433,7 +434,6 @@ export const profilesApi = {
                 linkedin: profile.linkedin,
                 updated_at: new Date().toISOString()
             })
-            .eq('id', user.id)
             .select()
             .single();
 

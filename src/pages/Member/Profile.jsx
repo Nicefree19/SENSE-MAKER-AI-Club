@@ -83,7 +83,8 @@ const MemberProfile = () => {
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({
+                .upsert({
+                    id: user.id,
                     full_name: formData.full_name,
                     username: formData.username,
                     bio: formData.bio,
@@ -92,8 +93,7 @@ const MemberProfile = () => {
                     linkedin: formData.linkedin,
                     avatar_url: formData.avatar_url,
                     updated_at: new Date().toISOString()
-                })
-                .eq('id', user.id);
+                });
 
             if (error) throw error;
 
