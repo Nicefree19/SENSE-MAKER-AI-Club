@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from '../components/Hero';
 import Pillars from '../components/Pillars';
 import FeaturedProjects from '../components/FeaturedProjects';
+import FeaturedPosts from '../components/FeaturedPosts';
 import SEO from '../components/SEO';
 
 const Home = () => {
@@ -15,6 +16,7 @@ const Home = () => {
             <Hero />
             <Pillars />
             <FeaturedProjects />
+            <FeaturedPosts />
         </div>
     );
 };

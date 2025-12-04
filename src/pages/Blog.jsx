@@ -142,8 +142,8 @@ const Blog = () => {
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${showFilters || hasActiveFilters
-                                    ? 'bg-primary/10 border-primary text-primary'
-                                    : 'bg-dark-surface border-white/10 text-gray-400 hover:text-white'
+                                ? 'bg-primary/10 border-primary text-primary'
+                                : 'bg-dark-surface border-white/10 text-gray-400 hover:text-white'
                                 }`}
                         >
                             <Filter size={18} />
@@ -186,8 +186,8 @@ const Blog = () => {
                                                 key={tag}
                                                 onClick={() => setSelectedTag(selectedTag === tag ? '' : tag)}
                                                 className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedTag === tag
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-white/5 text-gray-400 hover:text-white'
+                                                    ? 'bg-primary text-white'
+                                                    : 'bg-white/5 text-gray-400 hover:text-white'
                                                     }`}
                                             >
                                                 #{tag}
@@ -260,8 +260,16 @@ const Blog = () => {
                                     onClick={() => setSelectedPost(post)}
                                 >
                                     {/* Post Header Image */}
-                                    <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                                        <FileText size={40} className="text-primary/50" />
+                                    <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center overflow-hidden">
+                                        {post.image_url ? (
+                                            <img
+                                                src={post.image_url}
+                                                alt={post.title}
+                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <FileText size={40} className="text-primary/50" />
+                                        )}
                                     </div>
 
                                     <div className="p-6">
@@ -286,7 +294,7 @@ const Blog = () => {
                                         </h3>
 
                                         <p className="text-gray-400 text-sm mb-4 line-clamp-3">
-                                            {getPreview(post.content)}
+                                            {post.subtitle || getPreview(post.content)}
                                         </p>
 
                                         {/* Stats */}
@@ -335,8 +343,8 @@ const Blog = () => {
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
                                         className={`w-10 h-10 rounded-lg font-medium transition-colors ${currentPage === page
-                                                ? 'bg-primary text-white'
-                                                : 'bg-dark-surface border border-white/10 text-gray-400 hover:text-white'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-dark-surface border border-white/10 text-gray-400 hover:text-white'
                                             }`}
                                     >
                                         {page}
@@ -403,6 +411,18 @@ const Blog = () => {
                             </div>
 
                             <div className="prose prose-invert max-w-none">
+                                {selectedPost.image_url && (
+                                    <img
+                                        src={selectedPost.image_url}
+                                        alt={selectedPost.title}
+                                        className="w-full h-64 md:h-80 object-cover rounded-xl mb-8"
+                                    />
+                                )}
+                                {selectedPost.subtitle && (
+                                    <p className="text-xl text-gray-300 mb-8 font-light leading-relaxed border-l-4 border-primary pl-4">
+                                        {selectedPost.subtitle}
+                                    </p>
+                                )}
                                 <ReactMarkdown className="text-gray-300 leading-relaxed">
                                     {selectedPost.content}
                                 </ReactMarkdown>

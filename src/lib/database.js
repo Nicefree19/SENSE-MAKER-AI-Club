@@ -308,7 +308,9 @@ export const postsApi = {
             .from('posts')
             .insert({
                 title: post.title,
+                subtitle: post.subtitle || null,
                 content: post.content,
+                image_url: post.imageUrl || null,
                 tags: post.tags ? post.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 published: post.published || false,
                 author_id: user.id
@@ -326,7 +328,9 @@ export const postsApi = {
             .from('posts')
             .update({
                 title: post.title,
+                subtitle: post.subtitle || null,
                 content: post.content,
+                image_url: post.imageUrl || null,
                 tags: post.tags ? post.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 published: post.published,
                 updated_at: new Date().toISOString()
