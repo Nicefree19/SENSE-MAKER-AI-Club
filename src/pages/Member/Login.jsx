@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, UserPlus } from 'lucide-react';
+import { Lock, Mail, UserPlus, Key } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import SEO from '../../components/SEO';
 
@@ -9,10 +9,14 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
+    const [inviteCode, setInviteCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
     const navigate = useNavigate();
+
+    // 동아리 가입 코드 (실제 운영 시에는 환경변수나 DB에서 관리 권장)
+    const CLUB_INVITE_CODE = 'SENSE2025';
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -22,6 +26,11 @@ const Login = () => {
 
         try {
             if (isSignUp) {
+                // 가입 코드 확인
+                if (inviteCode !== CLUB_INVITE_CODE) {
+                    throw new Error('가입 코드가 올바르지 않습니다. 동아리 관리자에게 문의하세요.');
+                }
+
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
@@ -60,7 +69,7 @@ const Login = () => {
                     </div>
                     <h1 className="text-2xl font-bold text-white">{isSignUp ? '멤버 회원가입' : '멤버 로그인'}</h1>
                     <p className="text-gray-400 mt-2">
-                        {isSignUp ? '새로운 계정을 생성합니다' : '이메일과 비밀번호로 접속하세요'}
+                        {isSignUp ? '동아리 멤버만 가입이 가능합니다' : '이메일과 비밀번호로 접속하세요'}
                     </p>
                 </div>
 
@@ -78,17 +87,34 @@ const Login = () => {
 
                 <form onSubmit={handleAuth} className="space-y-6">
                     {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">이름</label>
-                            <input
-                                type="text"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                placeholder="홍길동"
-                                required
-                            />
-                        </div>
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">이름</label>
+                                <input
+                                    type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                    placeholder="홍길동"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">가입 코드</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={inviteCode}
+                                        onChange={(e) => setInviteCode(e.target.value)}
+                                        className="w-full bg-dark-bg border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                                        placeholder="동아리 가입 코드를 입력하세요"
+                                        required
+                                    />
+                                    <Key className="absolute left-3 top-3.5 text-gray-500" size={18} />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">* 가입 코드는 동아리 회장단에게 문의하세요.</p>
+                            </div>
+                        </>
                     )}
 
                     <div>
