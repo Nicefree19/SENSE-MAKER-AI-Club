@@ -3,10 +3,11 @@ import Hero from '../components/Hero';
 import Pillars from '../components/Pillars';
 import FeaturedProjects from '../components/FeaturedProjects';
 import FeaturedPosts from '../components/FeaturedPosts';
+import ActiveMembers from '../components/ActiveMembers';
+import FinalCTA from '../components/FinalCTA';
 import SEO from '../components/SEO';
 
 const Home = () => {
-    console.log('Home rendering');
     return (
         <div className="min-h-screen bg-dark-bg text-white">
             <SEO
@@ -17,6 +18,8 @@ const Home = () => {
             <Pillars />
             <FeaturedProjects />
             <FeaturedPosts />
+            <ActiveMembers />
+            <FinalCTA />
         </div>
     );
 };
