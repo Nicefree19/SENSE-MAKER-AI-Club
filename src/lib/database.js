@@ -414,7 +414,7 @@ export const profilesApi = {
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('updated_at', { ascending: true });
 
         if (error) throw error;
         return data;
