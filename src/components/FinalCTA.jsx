@@ -30,7 +30,7 @@ const FinalCTA = () => {
                     </h2>
 
                     <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-                        SENSE MAKER는 열정 있는 엔지니어와 개발자의 참여를 기다립니다.
+                        SENSE MAKER는 열정 있는 엔지니어와 개발자의 참여를 기다립니다.<br className="hidden md:block" />
                         당신의 아이디어가 현실이 되는 곳, 지금 시작하세요.
                     </p>
 
