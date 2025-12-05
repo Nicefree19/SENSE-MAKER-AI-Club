@@ -32,6 +32,7 @@ const Members = lazy(() => import('./pages/Members'));
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/Admin/Login'));
 const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AdminMembers = lazy(() => import('./pages/Admin/Members')); // Added
 const AdminMessages = lazy(() => import('./pages/Admin/Messages'));
 
 // Member Pages
@@ -89,9 +90,8 @@ function App() {
                             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                             <Route path="/members" element={<PublicLayout><Members /></PublicLayout>} />
 
-                            {/* Admin Routes (Legacy/System Admin) */}
-                            <Route path="/admin" element={<AuthLayout><AdminLogin /></AuthLayout>} />
                             <Route path="/admin/dashboard" element={<AuthLayout><AdminDashboard /></AuthLayout>} />
+                            <Route path="/admin/members" element={<AuthLayout><AdminMembers /></AuthLayout>} />
                             <Route path="/admin/messages" element={<AuthLayout><AdminMessages /></AuthLayout>} />
 
                             {/* Member Routes (CMS) */}

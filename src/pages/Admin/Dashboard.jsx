@@ -63,12 +63,14 @@ const Dashboard = () => {
                 { count: membersCount },
                 { count: projectsCount },
                 { count: postsCount },
-                { count: messagesCount }
+                { count: messagesCount },
+                { count: commentsCount }
             ] = await Promise.all([
                 supabase.from('profiles').select('*', { count: 'exact', head: true }),
                 supabase.from('projects').select('*', { count: 'exact', head: true }),
                 supabase.from('posts').select('*', { count: 'exact', head: true }).eq('published', true),
-                supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false)
+                supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false),
+                supabase.from('comments').select('*', { count: 'exact', head: true })
             ]);
 
             // Get total views
@@ -82,7 +84,7 @@ const Dashboard = () => {
                 members: membersCount || 0,
                 projects: projectsCount || 0,
                 posts: postsCount || 0,
-                comments: 0,
+                comments: commentsCount || 0,
                 messages: messagesCount || 0,
                 views: totalViews
             });
@@ -99,7 +101,8 @@ const Dashboard = () => {
             value: stats.members,
             icon: <Users size={24} />,
             color: 'text-purple-400',
-            bg: 'bg-purple-400/10'
+            bg: 'bg-purple-400/10',
+            link: '/admin/members'
         },
         {
             title: '프로젝트',
@@ -206,12 +209,12 @@ const Dashboard = () => {
                                 </Link>
 
                                 <Link
-                                    to="/members"
+                                    to="/admin/members"
                                     className="flex items-center justify-between p-4 bg-dark-bg rounded-lg border border-white/5 hover:border-primary/30 transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
                                         <Users size={20} className="text-purple-400" />
-                                        <span className="text-white">멤버 목록 보기</span>
+                                        <span className="text-white">멤버 관리</span>
                                     </div>
                                 </Link>
 
