@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AIAssistant from './components/AIAssistant'; // Added import for AIAssistant
 
 // 로딩 스피너 컴포넌트
 const PageLoader = () => (
@@ -104,8 +105,9 @@ function App() {
                             <Route path="/member/posts/:id/edit" element={<AuthLayout><PostEditor /></AuthLayout>} />
 
                             {/* 404 Not Found */}
-                            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+                            <Route path="*" element={<NotFound />} />
                         </Routes>
+                        <AIAssistant />
                     </Suspense>
                 </Router>
             </ToastProvider>
