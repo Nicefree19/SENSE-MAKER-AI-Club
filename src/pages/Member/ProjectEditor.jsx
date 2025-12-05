@@ -4,10 +4,12 @@ import MemberLayout from '../../components/MemberLayout';
 import SEO from '../../components/SEO';
 import { projectsApi } from '../../lib/database';
 import { supabase } from '../../lib/supabase';
-import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon, Box } from 'lucide-react';
+import { Save, Loader2, AlertCircle, CheckCircle, ArrowLeft, Users, Image as ImageIcon, Box, Layout, Palette, Github, ExternalLink, Code } from 'lucide-react';
 import MDEditor from '@uiw/react-md-editor';
 import ImageUploader from '../../components/ImageUploader';
 import ProjectTeamManager from '../../components/ProjectTeamManager';
+import TagInput from '../../components/TagInput';
+import { motion } from 'framer-motion';
 
 const ProjectEditor = () => {
     const navigate = useNavigate();
@@ -18,6 +20,8 @@ const ProjectEditor = () => {
     const [initialLoading, setInitialLoading] = useState(isEdit);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [activeTab, setActiveTab] = useState('basic'); // basic, media, design, content
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -27,19 +31,17 @@ const ProjectEditor = () => {
         demoUrl: '',
         modelUrl: '',
         layoutConfig: {
-            theme: 'default', // default, blue, purple, green
-            layout: 'standard', // standard, full-width, hero-image
+            theme: 'default',
+            layout: 'standard',
             showTeam: true
         }
     });
     const [authorId, setAuthorId] = useState(null);
-    const [showTeamPanel, setShowTeamPanel] = useState(false);
 
     useEffect(() => {
         if (id) {
             loadProject(id);
         } else {
-            // 새 프로젝트의 경우 현재 사용자를 author로 설정
             supabase.auth.getUser().then(({ data: { user } }) => {
                 if (user) setAuthorId(user.id);
             });
@@ -69,15 +71,13 @@ const ProjectEditor = () => {
     };
 
     const handleSubmit = async (e, published = true) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setLoading(true);
         setError(null);
         setSuccess(false);
 
         try {
-            if (!formData.title.trim()) {
-                throw new Error('프로젝트 명을 입력해주세요.');
-            }
+            if (!formData.title.trim()) throw new Error('프로젝트 명을 입력해주세요.');
 
             const projectData = { ...formData, published };
 
@@ -98,8 +98,13 @@ const ProjectEditor = () => {
         }
     };
 
-    const handleCancel = () => {
-        navigate('/member/dashboard');
+    const getThemeColor = (theme) => {
+        switch (theme) {
+            case 'blue': return 'from-blue-500/20 to-cyan-500/20 border-blue-500/30';
+            case 'purple': return 'from-purple-500/20 to-pink-500/20 border-purple-500/30';
+            case 'green': return 'from-green-500/20 to-emerald-500/20 border-green-500/30';
+            default: return 'from-primary/20 to-accent/20 border-white/10';
+        }
     };
 
     if (initialLoading) {
@@ -114,252 +119,322 @@ const ProjectEditor = () => {
 
     return (
         <MemberLayout>
-            <SEO
-                title={isEdit ? "프로젝트 수정" : "새 프로젝트"}
-                description={isEdit ? "프로젝트를 수정합니다." : "새로운 프로젝트를 등록합니다."}
-            />
+            <SEO title={isEdit ? "프로젝트 수정" : "새 프로젝트"} description="프로젝트 정보를 관리합니다." />
 
-            <div className="max-w-3xl mx-auto">
-                <button
-                    onClick={handleCancel}
-                    className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
-                >
-                    <ArrowLeft size={20} />
-                    대시보드로 돌아가기
-                </button>
-
-                <h1 className="text-3xl font-bold text-white mb-8">
-                    {isEdit ? '프로젝트 수정' : '새 프로젝트 등록'}
-                </h1>
-
-                {error && (
-                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
-                        <AlertCircle size={20} />
-                        <span>{error}</span>
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-center gap-3 text-green-400">
-                        <CheckCircle size={20} />
-                        <span>프로젝트가 성공적으로 {isEdit ? '수정' : '저장'}되었습니다! 대시보드로 이동합니다...</span>
-                    </div>
-                )}
-
-                <form onSubmit={(e) => handleSubmit(e, true)} className="bg-dark-surface p-8 rounded-xl border border-white/5 space-y-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            프로젝트 명 <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="예: 구조 해석 자동화 시스템"
-                            disabled={loading || success}
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">상태</label>
-                        <select
-                            value={formData.status}
-                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            disabled={loading || success}
-                        >
-                            <option value="Planning">기획 단계</option>
-                            <option value="In Progress">진행 중</option>
-                            <option value="Completed">완료됨</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">기술 스택 (쉼표로 구분)</label>
-                        <input
-                            type="text"
-                            value={formData.techStack}
-                            onChange={(e) => setFormData({ ...formData, techStack: e.target.value })}
-                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="React, Python, TensorFlow..."
-                            disabled={loading || success}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">GitHub URL (선택)</label>
-                        <input
-                            type="url"
-                            value={formData.githubUrl}
-                            onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
-                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                            placeholder="https://github.com/..."
-                            disabled={loading || success}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">데모 URL (선택)</label>
-                            <input
-                                type="url"
-                                value={formData.demoUrl}
-                                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
-                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                placeholder="https://demo.example.com"
-                                disabled={loading || success}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">3D 모델 URL (선택)</label>
-                            <input
-                                type="url"
-                                value={formData.modelUrl}
-                                onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
-                                className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                placeholder="https://models.example.com/model.glb"
-                                disabled={loading || success}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Customization Section */}
-                    <div className="bg-dark-bg p-6 rounded-lg border border-white/10 space-y-4">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <Box size={20} className="text-accent" />
-                            페이지 커스터마이징
-                        </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">테마 색상</label>
-                                <select
-                                    value={formData.layoutConfig.theme}
-                                    onChange={(e) => setFormData({
-                                        ...formData,
-                                        layoutConfig: { ...formData.layoutConfig, theme: e.target.value }
-                                    })}
-                                    className="w-full bg-dark-surface border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                >
-                                    <option value="default">기본 (Dark)</option>
-                                    <option value="blue">Ocean Blue</option>
-                                    <option value="purple">Neon Purple</option>
-                                    <option value="green">Forest Green</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">레이아웃 스타일</label>
-                                <select
-                                    value={formData.layoutConfig.layout}
-                                    onChange={(e) => setFormData({
-                                        ...formData,
-                                        layoutConfig: { ...formData.layoutConfig, layout: e.target.value }
-                                    })}
-                                    className="w-full bg-dark-surface border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                                >
-                                    <option value="standard">표준 (Standard)</option>
-                                    <option value="full-width">전체 너비 (Full Width)</option>
-                                    <option value="hero-image">히어로 이미지 강조</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">설명 (Markdown 지원)</label>
-                        <div className="space-y-4">
-                            <div className="bg-dark-bg p-4 rounded-lg border border-white/10">
-                                <p className="text-sm text-gray-400 mb-3 flex items-center gap-2">
-                                    <ImageIcon size={16} />
-                                    이미지 업로드 (드래그 앤 드롭으로 본문에 자동 삽입)
-                                </p>
-                                <ImageUploader onUploadComplete={(url) => {
-                                    const imageMarkdown = `![이미지 설명](${url})`;
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        description: prev.description ? prev.description + '\n' + imageMarkdown : imageMarkdown
-                                    }));
-                                }} />
-                            </div>
-
-                            <div data-color-mode="dark">
-                                <MDEditor
-                                    value={formData.description}
-                                    onChange={(val) => setFormData({ ...formData, description: val })}
-                                    height={400}
-                                    style={{ backgroundColor: '#1E293B', color: '#fff' }}
-                                    preview="live"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4 pt-4">
-                        <button
-                            type="button"
-                            onClick={handleCancel}
-                            className="px-6 py-3 rounded-lg text-gray-400 hover:text-white transition-colors"
-                            disabled={loading}
-                        >
-                            취소
+                        <button onClick={() => navigate('/member/dashboard')} className="flex items-center gap-2 text-gray-400 hover:text-white mb-2 transition-colors">
+                            <ArrowLeft size={20} /> 대시보드로 돌아가기
                         </button>
+                        <h1 className="text-3xl font-bold text-white">
+                            {isEdit ? '프로젝트 수정' : '새 프로젝트 등록'}
+                        </h1>
+                    </div>
+                    <div className="flex gap-3">
                         <button
-                            type="button"
-                            onClick={(e) => handleSubmit(e, false)}
+                            onClick={() => handleSubmit(null, false)}
                             disabled={loading || success}
-                            className="bg-dark-surface border border-white/20 hover:bg-white/5 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                            className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 text-white transition-colors disabled:opacity-50"
                         >
-                            {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
                             임시저장
                         </button>
                         <button
-                            type="submit"
+                            onClick={() => handleSubmit(null, true)}
                             disabled={loading || success}
-                            className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-primary/25 flex items-center gap-2 disabled:opacity-50"
                         >
-                            {loading ? (
-                                <>
-                                    <Loader2 size={20} className="animate-spin" />
-                                    {isEdit ? '수정 중...' : '등록 중...'}
-                                </>
-                            ) : (
-                                <>
-                                    <CheckCircle size={20} />
-                                    {isEdit ? '프로젝트 수정' : '프로젝트 등록'}
-                                </>
-                            )}
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                            {isEdit ? '수정 완료' : '프로젝트 등록'}
                         </button>
                     </div>
-                </form>
+                </div>
 
-                {/* Team Management Section - Only show for existing projects */}
-                {isEdit && authorId && (
-                    <div className="mt-8 bg-dark-surface p-6 rounded-xl border border-white/5">
-                        <button
-                            onClick={() => setShowTeamPanel(!showTeamPanel)}
-                            className="w-full flex items-center justify-between text-left"
-                        >
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Users size={20} className="text-purple-400" />
-                                팀원 관리
-                            </h2>
-                            <span className="text-gray-400 text-sm">
-                                {showTeamPanel ? '접기' : '펼치기'}
-                            </span>
-                        </button>
-
-                        {showTeamPanel && (
-                            <div className="mt-6 pt-6 border-t border-white/10">
-                                <ProjectTeamManager
-                                    projectId={id}
-                                    authorId={authorId}
-                                />
-                            </div>
-                        )}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-400">
+                        <AlertCircle size={20} /> <span>{error}</span>
                     </div>
                 )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Form */}
+                    <div className="lg:col-span-2 space-y-6">
+
+                        {/* Navigation Tabs */}
+                        <div className="flex border-b border-white/10 mb-6 overflow-x-auto">
+                            {[
+                                { id: 'basic', label: '기본 정보', icon: Box },
+                                { id: 'media', label: '미디어 & 링크', icon: ImageIcon },
+                                { id: 'design', label: '디자인 설정', icon: Palette },
+                                { id: 'content', label: '상세 내용', icon: Layout },
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center gap-2 px-6 py-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                                            ? 'border-primary text-primary'
+                                            : 'border-transparent text-gray-400 hover:text-white'
+                                        }`}
+                                >
+                                    <tab.icon size={18} />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="bg-dark-surface rounded-xl border border-white/5 p-6 min-h-[500px]">
+                            {activeTab === 'basic' && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">프로젝트 명 <span className="text-red-400">*</span></label>
+                                        <input
+                                            type="text"
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            className="w-full bg-dark-bg border border-white/10 rounded-lg px-4 py-3 text-white focus:border-primary focus:outline-none transition-colors"
+                                            placeholder="프로젝트 이름을 입력하세요"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">진행 상태</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {['Planning', 'In Progress', 'Completed'].map(status => (
+                                                <button
+                                                    key={status}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status })}
+                                                    className={`py-3 rounded-lg border transition-all ${formData.status === status
+                                                            ? 'bg-primary/20 border-primary text-primary'
+                                                            : 'bg-dark-bg border-white/10 text-gray-400 hover:border-white/30'
+                                                        }`}
+                                                >
+                                                    {status === 'Planning' && '기획 단계'}
+                                                    {status === 'In Progress' && '진행 중'}
+                                                    {status === 'Completed' && '완료됨'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">기술 스택</label>
+                                        <TagInput
+                                            value={formData.techStack}
+                                            onChange={(val) => setFormData({ ...formData, techStack: val })}
+                                            placeholder="React, Python, TensorFlow..."
+                                        />
+                                    </div>
+                                    {isEdit && authorId && (
+                                        <div className="pt-6 border-t border-white/10">
+                                            <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
+                                                <Users size={20} className="text-purple-400" /> 팀원 관리
+                                            </h3>
+                                            <ProjectTeamManager projectId={id} authorId={authorId} />
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'media' && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">GitHub Repository</label>
+                                        <div className="relative">
+                                            <Github size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                                            <input
+                                                type="url"
+                                                value={formData.githubUrl}
+                                                onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
+                                                className="w-full bg-dark-bg border border-white/10 rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary focus:outline-none transition-colors"
+                                                placeholder="https://github.com/username/repo"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">Live Demo URL</label>
+                                        <div className="relative">
+                                            <ExternalLink size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                                            <input
+                                                type="url"
+                                                value={formData.demoUrl}
+                                                onChange={(e) => setFormData({ ...formData, demoUrl: e.target.value })}
+                                                className="w-full bg-dark-bg border border-white/10 rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary focus:outline-none transition-colors"
+                                                placeholder="https://my-project.com"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">3D Model URL (GLB/GLTF)</label>
+                                        <div className="relative">
+                                            <Box size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                                            <input
+                                                type="url"
+                                                value={formData.modelUrl}
+                                                onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
+                                                className="w-full bg-dark-bg border border-white/10 rounded-lg pl-12 pr-4 py-3 text-white focus:border-primary focus:outline-none transition-colors"
+                                                placeholder="https://models.com/my-model.glb"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'design' && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-4">테마 색상</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {[
+                                                { id: 'default', name: 'Dark Default', color: 'bg-gray-800' },
+                                                { id: 'blue', name: 'Ocean Blue', color: 'bg-blue-600' },
+                                                { id: 'purple', name: 'Neon Purple', color: 'bg-purple-600' },
+                                                { id: 'green', name: 'Forest Green', color: 'bg-green-600' },
+                                            ].map(theme => (
+                                                <button
+                                                    key={theme.id}
+                                                    onClick={() => setFormData({ ...formData, layoutConfig: { ...formData.layoutConfig, theme: theme.id } })}
+                                                    className={`relative p-4 rounded-xl border-2 transition-all overflow-hidden group ${formData.layoutConfig.theme === theme.id
+                                                            ? 'border-primary bg-white/5'
+                                                            : 'border-white/5 hover:border-white/20'
+                                                        }`}
+                                                >
+                                                    <div className={`w-full h-12 rounded-lg mb-3 ${theme.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
+                                                    <span className="text-sm font-medium text-gray-300">{theme.name}</span>
+                                                    {formData.layoutConfig.theme === theme.id && (
+                                                        <div className="absolute top-2 right-2 text-primary">
+                                                            <CheckCircle size={16} />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-4">레이아웃 스타일</label>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {[
+                                                { id: 'standard', name: 'Standard', desc: '기본 카드형 레이아웃' },
+                                                { id: 'full-width', name: 'Full Width', desc: '전체 너비 확장형' },
+                                                { id: 'hero-image', name: 'Hero Image', desc: '이미지 강조형' },
+                                            ].map(layout => (
+                                                <button
+                                                    key={layout.id}
+                                                    onClick={() => setFormData({ ...formData, layoutConfig: { ...formData.layoutConfig, layout: layout.id } })}
+                                                    className={`text-left p-4 rounded-xl border-2 transition-all ${formData.layoutConfig.layout === layout.id
+                                                            ? 'border-primary bg-white/5'
+                                                            : 'border-white/5 hover:border-white/20'
+                                                        }`}
+                                                >
+                                                    <div className="mb-2">
+                                                        <Layout size={24} className={formData.layoutConfig.layout === layout.id ? 'text-primary' : 'text-gray-500'} />
+                                                    </div>
+                                                    <div className="font-medium text-white">{layout.name}</div>
+                                                    <div className="text-xs text-gray-500">{layout.desc}</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'content' && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                                    <div className="bg-dark-bg p-4 rounded-lg border border-white/10 mb-4">
+                                        <p className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+                                            <ImageIcon size={16} />
+                                            이미지 업로드 (드래그 앤 드롭으로 본문에 자동 삽입)
+                                        </p>
+                                        <ImageUploader onUploadComplete={(url) => {
+                                            const imageMarkdown = `![이미지 설명](${url})`;
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                description: prev.description ? prev.description + '\n' + imageMarkdown : imageMarkdown
+                                            }));
+                                        }} />
+                                    </div>
+                                    <div data-color-mode="dark">
+                                        <MDEditor
+                                            value={formData.description}
+                                            onChange={(val) => setFormData({ ...formData, description: val })}
+                                            height={500}
+                                            style={{ backgroundColor: '#1E293B', color: '#fff' }}
+                                            preview="edit"
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Live Preview */}
+                    <div className="lg:col-span-1">
+                        <div className="sticky top-24">
+                            <h3 className="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider">Live Preview</h3>
+
+                            {/* Card Preview */}
+                            <div className={`bg-dark-surface rounded-xl border overflow-hidden transition-all ${getThemeColor(formData.layoutConfig.theme)}`}>
+                                <div className={`h-32 bg-gradient-to-br ${getThemeColor(formData.layoutConfig.theme).split(' ')[0]} flex items-center justify-center relative`}>
+                                    <Box size={40} className="text-white/50" />
+                                    {formData.modelUrl && (
+                                        <div className="absolute top-2 right-2">
+                                            <span className="bg-black/50 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                                <Box size={12} /> 3D Model
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <h3 className="text-xl font-bold text-white line-clamp-1">
+                                            {formData.title || '프로젝트 제목'}
+                                        </h3>
+                                        <span className="px-2 py-1 rounded text-xs font-medium bg-white/10 text-gray-300">
+                                            {formData.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-400 text-sm mb-4 line-clamp-3 min-h-[60px]">
+                                        {formData.description
+                                            ? formData.description.replace(/[#*`]/g, '').slice(0, 100)
+                                            : '프로젝트 설명이 여기에 표시됩니다...'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {formData.techStack ? formData.techStack.split(',').map((tech, i) => (
+                                            <span key={i} className="px-2 py-1 bg-white/5 rounded text-xs text-gray-300 flex items-center gap-1">
+                                                <Code size={12} /> {tech.trim()}
+                                            </span>
+                                        )) : (
+                                            <span className="text-xs text-gray-600 italic">기술 스택 없음</span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <Users size={12} className="text-primary" />
+                                            </div>
+                                            <span className="text-sm text-gray-500">Author</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {formData.githubUrl && <Github size={16} className="text-gray-500" />}
+                                            {formData.demoUrl && <ExternalLink size={16} className="text-gray-500" />}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-sm text-blue-300">
+                                <p className="flex items-center gap-2 mb-2 font-bold">
+                                    <Layout size={16} />
+                                    Tip
+                                </p>
+                                <p>
+                                    선택한 <strong>{formData.layoutConfig.theme}</strong> 테마와
+                                    <strong> {formData.layoutConfig.layout}</strong> 레이아웃이 적용된 미리보기입니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </MemberLayout>
     );

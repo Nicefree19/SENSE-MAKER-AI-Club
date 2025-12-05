@@ -80,9 +80,9 @@ const ImageUploader = ({ onUploadComplete }) => {
     return (
         <div className="w-full">
             <div
-                className={`relative border-2 border-dashed rounded-lg p-6 transition-colors text-center ${dragActive
-                    ? 'border-primary bg-primary/10'
-                    : 'border-white/10 hover:border-white/20 bg-dark-bg'
+                className={`relative border border-dashed rounded-xl p-8 transition-all duration-300 text-center group ${dragActive
+                    ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]'
+                    : 'border-white/10 hover:border-primary/50 hover:bg-white/5 bg-dark-surface'
                     }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -91,30 +91,31 @@ const ImageUploader = ({ onUploadComplete }) => {
             >
                 <input
                     type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     onChange={handleChange}
                     accept="image/*"
                     disabled={uploading}
                 />
 
-                <div className="flex flex-col items-center justify-center space-y-2">
+                <div className="flex flex-col items-center justify-center space-y-3">
                     {uploading ? (
                         <>
-                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                            <p className="text-sm text-gray-400">업로드 중...</p>
+                            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                            <p className="text-sm font-medium text-primary">이미지 업로드 중...</p>
                         </>
                     ) : (
                         <>
-                            <div className="p-3 bg-white/5 rounded-full">
-                                <Upload className="w-6 h-6 text-gray-400" />
+                            <div className="p-4 bg-white/5 rounded-full group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-300">
+                                <Upload className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors" />
                             </div>
-                            <div className="text-sm text-gray-300">
-                                <span className="font-medium text-primary">클릭하여 업로드</span>
-                                <span className="text-gray-500"> 또는 드래그 앤 드롭</span>
+                            <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                                    이미지를 드래그하거나 클릭하세요
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    PNG, JPG, GIF (최대 5MB)
+                                </p>
                             </div>
-                            <p className="text-xs text-gray-500">
-                                PNG, JPG, GIF up to 5MB
-                            </p>
                         </>
                     )}
                 </div>
