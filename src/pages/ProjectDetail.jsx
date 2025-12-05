@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import { projectsApi } from '../lib/database';
 import { supabase } from '../lib/supabase';
 import { Loader2, ArrowLeft, Calendar, Github, ExternalLink, Code, Users, Box, Edit } from 'lucide-react';
-// import ModelViewer from '../components/ModelViewer';
+import ModelViewer from '../components/ModelViewer';
 
 const ProjectDetail = () => {
     const { id } = useParams();
@@ -190,20 +190,13 @@ const ProjectDetail = () => {
                             <h3 className="font-bold">3D Structure View</h3>
                         </div>
                         <div className="h-[500px] bg-gray-900">
-                            {/* <ModelViewer modelUrl={project.model_url} /> */}
-                            <div className="w-full h-full flex items-center justify-center text-gray-500">
-                                Model Viewer Component (Uncomment to enable)
-                            </div>
+                            <ModelViewer modelUrl={project.model_url} />
                         </div>
                     </div>
                 )}
 
                 {/* Content */}
                 <div className="bg-dark-surface p-8 rounded-xl border border-white/5" data-color-mode="dark">
-                    {/* <MDEditor.Markdown
-                        source={project.description}
-                        style={{ backgroundColor: 'transparent', color: '#e5e7eb' }}
-                    /> */}
                     <div className="prose prose-invert max-w-none">
                         <ReactMarkdown>{project.description}</ReactMarkdown>
                     </div>
