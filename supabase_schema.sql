@@ -126,6 +126,18 @@ create table if not exists public.project_members (
 );
 
 -- ============================================
+-- 9. Contact Messages Table
+-- ============================================
+create table if not exists public.contact_messages (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null,
+  email text not null,
+  message text not null,
+  is_read boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- ============================================
 -- Row Level Security (RLS) Policies
 -- ============================================
 
@@ -183,6 +195,17 @@ create policy "Project owners can manage members." on public.project_members for
     select 1 from public.projects
     where id = public.project_members.project_id
     and author_id = auth.uid()
+  )
+);
+
+-- Contact Messages
+alter table public.contact_messages enable row level security;
+create policy "Anyone can insert contact messages." on public.contact_messages for insert with check (true);
+create policy "Only admins can view contact messages." on public.contact_messages for select using (
+  exists (
+    select 1 from public.profiles
+    where id = auth.uid()
+    and role = 'admin'
   )
 );
 
