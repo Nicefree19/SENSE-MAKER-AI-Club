@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Layers, MessageSquare, FileCheck, Calculator, ArrowRight, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { projectsApi } from '../lib/database';
+import SpotlightCard from './SpotlightCard';
+import ScrollReveal from './ScrollReveal';
 
 const FeaturedProjects = () => {
     const [projects, setProjects] = useState([]);
@@ -81,39 +83,33 @@ const FeaturedProjects = () => {
                 {projects.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {projects.map((project, index) => (
-                            <motion.div
-                                key={project.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ y: -10 }}
-                                className="bg-dark-surface p-6 rounded-xl border border-white/5 hover:border-accent/50 transition-all duration-300 group h-full flex flex-col"
-                            >
-                                <Link to={`/projects/${project.id}`} className="flex-1 flex flex-col">
-                                    <div className="mb-4 p-3 bg-white/5 rounded-lg w-fit group-hover:bg-accent/10 transition-colors">
-                                        {getIcon(project.title)}
-                                    </div>
-                                    <h3 className="text-lg font-bold text-white mb-2 line-clamp-1 group-hover:text-accent transition-colors">
-                                        {project.title}
-                                    </h3>
-                                    <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">
-                                        {project.description}
-                                    </p>
-                                    <div className="flex items-center justify-between mt-auto">
-                                        <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${project.status === 'Completed' ? 'bg-green-500/10 text-green-400' :
+                            <ScrollReveal key={project.id} delay={index * 0.1}>
+                                <SpotlightCard className="h-full flex flex-col p-6 group">
+                                    <Link to={`/projects/${project.id}`} className="flex-1 flex flex-col relative z-10">
+                                        <div className="mb-4 p-3 bg-white/5 rounded-lg w-fit group-hover:bg-accent/10 transition-colors">
+                                            {getIcon(project.title)}
+                                        </div>
+                                        <h3 className="text-lg font-bold text-white mb-2 line-clamp-1 group-hover:text-accent transition-colors">
+                                            {project.title}
+                                        </h3>
+                                        <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">
+                                            {project.description}
+                                        </p>
+                                        <div className="flex items-center justify-between mt-auto">
+                                            <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${project.status === 'Completed' ? 'bg-green-500/10 text-green-400' :
                                                 project.status === 'In Progress' ? 'bg-blue-500/10 text-blue-400' :
                                                     'bg-gray-500/10 text-gray-400'
-                                            }`}>
-                                            {project.status === 'Completed' ? '완료됨' :
-                                                project.status === 'In Progress' ? '진행 중' : '기획 단계'}
-                                        </span>
-                                        {project.model_url && (
-                                            <Box size={16} className="text-gray-500" title="3D 모델 포함" />
-                                        )}
-                                    </div>
-                                </Link>
-                            </motion.div>
+                                                }`}>
+                                                {project.status === 'Completed' ? '완료됨' :
+                                                    project.status === 'In Progress' ? '진행 중' : '기획 단계'}
+                                            </span>
+                                            {project.model_url && (
+                                                <Box size={16} className="text-gray-500" title="3D 모델 포함" />
+                                            )}
+                                        </div>
+                                    </Link>
+                                </SpotlightCard>
+                            </ScrollReveal>
                         ))}
                     </div>
                 ) : (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import CountUp from './CountUp';
 import {
     Eye,
     Heart,
@@ -137,9 +138,8 @@ const StatsPanel = ({ userId }) => {
                     <Icon size={18} className={color.replace('bg-', 'text-')} />
                 </div>
                 {trend !== null && trend !== undefined && (
-                    <div className={`flex items-center gap-1 text-xs ${
-                        parseFloat(trend) >= 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
+                    <div className={`flex items-center gap-1 text-xs ${parseFloat(trend) >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
                         {parseFloat(trend) >= 0 ? (
                             <TrendingUp size={14} />
                         ) : (
@@ -149,7 +149,9 @@ const StatsPanel = ({ userId }) => {
                     </div>
                 )}
             </div>
-            <p className="text-2xl font-bold text-white">{value.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white">
+                <CountUp to={value} />
+            </p>
             <p className="text-xs text-gray-500 mt-1">{label}</p>
         </div>
     );
